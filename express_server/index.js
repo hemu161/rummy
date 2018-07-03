@@ -5,7 +5,7 @@ const MetaAuth = require('meta-auth');
 
 const port = 4000;
 const app = express()
-const metaAuth = new MetaAuth();
+const metaAuth = new MetaAuth({banner:"this is to verify your ethereum address"});
 
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -20,6 +20,8 @@ app.get('/auth/:MetaAddress', metaAuth, (req, res) => {
 });
 
 app.get('/auth/:MetaMessage/:MetaSignature', metaAuth, (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  console.log(req.metaAuth);
   if (req.metaAuth && req.metaAuth.recovered) {
     // Signature matches the cache address/challenge
     // Authentication is valid, assign JWT, etc.

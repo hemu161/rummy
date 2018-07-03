@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 import web3 from './web3';
+import AuthService from './components/AuthService';
+import withAuth from './components/withAuth';
+const Auth = new AuthService();
 
 class App extends Component {
   state = {
@@ -17,25 +20,15 @@ class App extends Component {
   onClick = async () => {
     const accounts = await web3.eth.getAccounts();
     const account = accounts[0];
-    const url = 'http://localhost:4000/auth/' + account;
-    let res = await fetch(url);
-    res = res.json();
+   
+    let res = await fetch('http://localhost:4000/auth/' + account.toLowerCase());
+    const challenge = await res.json();
     
-    let challenge = [{
-        type: 'string',
-        name: 'challenge',
-        value: res
-      }];
-
     const params = [challenge, account];
     const method = 'eth_signTypedData';
 
-   // await web3.eth.signTypedData(params);
-    web3.currentProvider.sendAsync({
-        method,
-        params,
-        account
-      }, async (err, result) => {
+    web3.currentProvider.sendAsync({method,params,account}, 
+      async (err, result) => {
         const signature = result.result;
         if (err) {
           return console.error(err);
@@ -43,19 +36,38 @@ class App extends Component {
         if (result.error) {
           return console.error(result.error);
         }
-       console.log(signature);
+        
+        // const recovered = sigUtil.recoverTypedSignature({
+        //   data:challenge,
+        //   sig:signature
+        // });
+        // console.log(recovered);
+
+        let check = await fetch('http://localhost:4000/auth/' + challenge[1].value + '/' + signature);
+        const verify = await check.text();
+        console.log(verify);
       });
-
-
+  
   };
+
+  handleLogout(){
+    Auth.logout()
+    this.props.history.replace('/login');
+ }
 
   render() {
     const { response } = this.state;
-    return (
-      <div style={{ textAlign: "center" }}>
-       <button onClick={ this.onClick }>Sign In</button>
-      </div>
-    );
+    return(
+      <div className="App">
+          <div className="App-header">
+              
+              <h2>Welcome {this.props.user.username}</h2>
+          </div>
+          <p className="App-intro">
+              <button type="button" className="form-submit" onClick={this.handleLogout.bind(this)}>Logout</button>
+          </p>
+          </div>
+  );
   }
 }
-export default App;
+export default withAuth(App);
