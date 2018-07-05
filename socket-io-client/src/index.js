@@ -5,6 +5,7 @@ import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Login from './components/Login'
+import Game from './components/Game'
 
 // ReactDOM.render(<App />, document.getElementById('root'));
 ReactDOM.render(
@@ -12,6 +13,7 @@ ReactDOM.render(
         <div>
           <Route exact path='/' component={App} />
           <Route exact path="/login" component={Login} />
+          <Route exact path="/game" component={Game} />
         </div>
     </Router>,
     document.getElementById('root'));
